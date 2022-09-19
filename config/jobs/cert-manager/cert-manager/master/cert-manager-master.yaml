@@ -30,13 +30,6 @@ presubmits:
           requests:
             cpu: 2000m
             memory: 4Gi
-        lifecycle:
-          preStop:
-            exec:
-              command:
-              - /bin/sh
-              - -c
-              - make kind-logs
       dnsConfig:
         options:
         - name: ndots
@@ -303,9 +296,54 @@ presubmits:
           value: "1"
     branches:
     - master
+    always_run: false
+    optional: true
+  - name: pull-cert-manager-master-e2e-v1-25
+    max_concurrency: 4
+    agent: kubernetes
+    decorate: true
+    annotations:
+      description: Runs the end-to-end test suite against a Kubernetes v1.25 cluster
+      testgrid-alert-email: cert-manager-dev-alerts@googlegroups.com
+      testgrid-create-job-group: "true"
+      testgrid-dashboards: cert-manager-presubmits-master
+    labels:
+      preset-cloudflare-credentials: "true"
+      preset-default-e2e-volumes: "true"
+      preset-dind-enabled: "true"
+      preset-enable-all-feature-gates: "true"
+      preset-ginkgo-skip-default: "true"
+      preset-make-volumes: "true"
+      preset-retry-flakey-jobs: "true"
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: eu.gcr.io/jetstack-build-infra-images/bazelbuild:20220830-c65cd19-4.2.1
+        args:
+        - runner
+        - make
+        - -j3
+        - vendor-go
+        - e2e-ci
+        - K8S_VERSION=1.25
+        resources:
+          requests:
+            cpu: 3500m
+            memory: 12Gi
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - SYS_ADMIN
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "1"
+    branches:
+    - master
     always_run: true
     optional: false
-  - name: pull-cert-manager-master-e2e-v1-24-upgrade
+  - name: pull-cert-manager-master-e2e-v1-25-upgrade
     max_concurrency: 4
     agent: kubernetes
     decorate: true
@@ -325,7 +363,7 @@ presubmits:
         args:
         - runner
         - make
-        - K8S_VERSION=1.24
+        - K8S_VERSION=1.25
         - vendor-go
         - test-upgrade
         resources:
@@ -345,7 +383,7 @@ presubmits:
     - master
     always_run: true
     optional: false
-  - name: pull-cert-manager-master-e2e-v1-24-issuers-venafi-tpp
+  - name: pull-cert-manager-master-e2e-v1-25-issuers-venafi-tpp
     max_concurrency: 4
     agent: kubernetes
     decorate: true
@@ -371,7 +409,7 @@ presubmits:
         - -j3
         - vendor-go
         - e2e-ci
-        - K8S_VERSION=1.24
+        - K8S_VERSION=1.25
         resources:
           requests:
             cpu: 3500m
@@ -389,7 +427,7 @@ presubmits:
     - master
     always_run: false
     optional: true
-  - name: pull-cert-manager-master-e2e-v1-24-issuers-venafi-cloud
+  - name: pull-cert-manager-master-e2e-v1-25-issuers-venafi-cloud
     max_concurrency: 4
     agent: kubernetes
     decorate: true
@@ -415,7 +453,7 @@ presubmits:
         - -j3
         - vendor-go
         - e2e-ci
-        - K8S_VERSION=1.24
+        - K8S_VERSION=1.25
         resources:
           requests:
             cpu: 3500m
@@ -433,7 +471,7 @@ presubmits:
     - master
     always_run: false
     optional: true
-  - name: pull-cert-manager-master-e2e-v1-24-feature-gates-disabled
+  - name: pull-cert-manager-master-e2e-v1-25-feature-gates-disabled
     max_concurrency: 4
     agent: kubernetes
     decorate: true
@@ -460,7 +498,7 @@ presubmits:
         - -j3
         - vendor-go
         - e2e-ci
-        - K8S_VERSION=1.24
+        - K8S_VERSION=1.25
         resources:
           requests:
             cpu: 3500m
@@ -505,13 +543,6 @@ periodics:
         requests:
           cpu: 2000m
           memory: 4Gi
-      lifecycle:
-        preStop:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - make kind-logs
     dnsConfig:
       options:
       - name: ndots
@@ -751,7 +782,53 @@ periodics:
     repo: cert-manager
     base_ref: master
   interval: 2h
-- name: ci-cert-manager-master-e2e-v1-24-issuers-venafi
+- name: ci-cert-manager-master-e2e-v1-25
+  max_concurrency: 4
+  agent: kubernetes
+  decorate: true
+  annotations:
+    description: Runs the end-to-end test suite against a Kubernetes v1.25 cluster
+    testgrid-alert-email: cert-manager-dev-alerts@googlegroups.com
+    testgrid-create-job-group: "true"
+    testgrid-dashboards: cert-manager-periodics-master
+  labels:
+    preset-cloudflare-credentials: "true"
+    preset-default-e2e-volumes: "true"
+    preset-dind-enabled: "true"
+    preset-enable-all-feature-gates: "true"
+    preset-ginkgo-skip-default: "true"
+    preset-make-volumes: "true"
+    preset-retry-flakey-jobs: "true"
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: eu.gcr.io/jetstack-build-infra-images/bazelbuild:20220830-c65cd19-4.2.1
+      args:
+      - runner
+      - make
+      - -j3
+      - vendor-go
+      - e2e-ci
+      - K8S_VERSION=1.25
+      resources:
+        requests:
+          cpu: 3500m
+          memory: 12Gi
+      securityContext:
+        privileged: true
+        capabilities:
+          add:
+          - SYS_ADMIN
+    dnsConfig:
+      options:
+      - name: ndots
+        value: "1"
+  extra_refs:
+  - org: cert-manager
+    repo: cert-manager
+    base_ref: master
+  interval: 2h
+- name: ci-cert-manager-master-e2e-v1-25-issuers-venafi
   max_concurrency: 4
   agent: kubernetes
   decorate: true
@@ -778,7 +855,7 @@ periodics:
       - -j3
       - vendor-go
       - e2e-ci
-      - K8S_VERSION=1.24
+      - K8S_VERSION=1.25
       resources:
         requests:
           cpu: 3500m
@@ -797,7 +874,7 @@ periodics:
     repo: cert-manager
     base_ref: master
   interval: 12h
-- name: ci-cert-manager-master-e2e-v1-24-upgrade
+- name: ci-cert-manager-master-e2e-v1-25-upgrade
   max_concurrency: 4
   agent: kubernetes
   decorate: true
@@ -817,7 +894,7 @@ periodics:
       args:
       - runner
       - make
-      - K8S_VERSION=1.24
+      - K8S_VERSION=1.25
       - vendor-go
       - test-upgrade
       resources:
@@ -1050,6 +1127,52 @@ periodics:
       - vendor-go
       - e2e-ci
       - K8S_VERSION=1.24
+      resources:
+        requests:
+          cpu: 3500m
+          memory: 12Gi
+      securityContext:
+        privileged: true
+        capabilities:
+          add:
+          - SYS_ADMIN
+    dnsConfig:
+      options:
+      - name: ndots
+        value: "1"
+  extra_refs:
+  - org: cert-manager
+    repo: cert-manager
+    base_ref: master
+  interval: 24h
+- name: ci-cert-manager-master-e2e-v1-25-feature-gates-disabled
+  max_concurrency: 4
+  agent: kubernetes
+  decorate: true
+  annotations:
+    description: Runs the E2E tests with all feature gates disabled
+    testgrid-alert-email: cert-manager-dev-alerts@googlegroups.com
+    testgrid-create-job-group: "true"
+    testgrid-dashboards: cert-manager-periodics-master
+  labels:
+    preset-cloudflare-credentials: "true"
+    preset-default-e2e-volumes: "true"
+    preset-dind-enabled: "true"
+    preset-disable-all-alpha-beta-feature-gates: "true"
+    preset-ginkgo-skip-default: "true"
+    preset-make-volumes: "true"
+    preset-retry-flakey-jobs: "true"
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: eu.gcr.io/jetstack-build-infra-images/bazelbuild:20220830-c65cd19-4.2.1
+      args:
+      - runner
+      - make
+      - -j3
+      - vendor-go
+      - e2e-ci
+      - K8S_VERSION=1.25
       resources:
         requests:
           cpu: 3500m
